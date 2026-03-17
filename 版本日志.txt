@@ -45,3 +45,4 @@ v??? 2026/3/14
   -新增了设备ID信息存储
 -connect.h现在拆分为wifi.h与mqtt.h
 -已将项目迁移至PlatformIO
+-初次启动时自动打开蓝牙（通过wifi-ssid判断是否进入蓝牙模式

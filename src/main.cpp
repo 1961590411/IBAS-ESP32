@@ -32,6 +32,11 @@ void setup()
 
   /** 就绪问候语 */
   Serial.println("The system is ready.");
+
+  if(strcmp(FlashData.wifiSSID,"wifi-ssid") == 0){
+    Serial.println("初次启动，请打开蓝牙完成配置");
+    setBTMode(true);
+  }
 }
 
 void loop()

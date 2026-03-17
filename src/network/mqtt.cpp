@@ -36,9 +36,9 @@ void initMQTT(void){
 }
 
 unsigned long previousConnectMillis = 0; // 毫秒时间记录
-const long intervalConnectMillis = 4000; // 时间间隔
+const long intervalConnectMillis = 20000; // 时间间隔
 unsigned long previousPublishMillis = 0; // 毫秒时间记录
-const long intervalPublishMillis = 4000; // 时间间隔
+const long intervalPublishMillis = 20000; // 时间间隔
 
 void loopMQTT(void){
   /** 查询连接状态 */

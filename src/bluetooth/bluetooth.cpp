@@ -54,12 +54,14 @@ void loopBluetooth() {
     numCommand = 3;
   else if(equalString(word, "off"))
     numCommand = 4;
+  else if(equalString(word, "reset"))
+    numCommand = 5;
   //截取第一个字段，解析该字段命令
 
   switch(numCommand) {
     case 1:
       //Help命令
-      SerialBT.println("Command list:\n\t1.help\n\t2.wifi\n\t3.address\n\t4.off\n");
+      SerialBT.println("Command list:\n\t1.help\n\t2.wifi\n\t3.address\n\t4.off\n\t5.reset\n");
       break;
       //向蓝牙串口发送帮助信息
       //命令格式: help
@@ -130,6 +132,9 @@ void loopBluetooth() {
       break;
       //关闭蓝牙模式
       //命令格式: off
+    case 5:
+      resetFlash();
+      break;
     default:
       SerialBT.println("Unknown command. Put \"help\" for help.\n");
       //未知命令

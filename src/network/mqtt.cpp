@@ -5,23 +5,25 @@
 
 void mqttCallback(char*,byte*,unsigned int);
 
-static char mqtt_client_id_buf[13] = {0};
-static char mqtt_topic_pub_buf[128] = {0};
+static char mqtt_topic_data_pub_buf[128] = {0};
+static char mqtt_topic_control_sub_buf[128] = {0};
 
 /** MQTT相关配置信息 */
 const  char    *mqtt_broker_addr           = "120.26.133.159";                     //服务器地址
 const  uint16_t mqtt_broker_port           = 1883;                                 //服务端口号
 
-static char    *mqtt_username;                                                     //账号
-static char    *mqtt_client_id;                                                    //客户端ID
+const  char    *mqtt_username              = nullptr;                              //账号
+static char     mqtt_client_id[13];                                                //客户端ID
 const  char    *mqtt_password              = "IBAS";                               //密码
 
-const  char    *mqtt_topic_hello_pub       = "IBAS/system/device/hello";           //
-const  char    *mqtt_topic_pre_data_pub    = "IBAS/system/device/group/";          //发布主题前缀
-static char    *mqtt_topic_data_pub;                                               //发布主题
+const  char    *mqtt_topic_hello_pub       = "IBAS/system/device/hello";           //发布主题Hello
+const  char    *mqtt_topic_pre_data_pub    = "IBAS/system/device/group/";          //发布主题Data前缀
+const  char    *mqtt_topic_data_pub        = mqtt_topic_data_pub_buf;              //发布主题Data
 
-const  char    *mqtt_topic_pre_control_sub = "IBAS/system/client/control/device/"; //订阅主题前缀
-static char    *mqtt_topic_control_sub;                                            //订阅主题
+const  char    *mqtt_topic_pre_control_sub = "IBAS/system/client/control/device/"; //订阅主题Control前缀
+const  char    *mqtt_topic_control_sub     = mqtt_topic_control_sub_buf;           //订阅主题Control
+
+const char *mqtt_username = nullptr;
 
 WiFiClient tcpClient;
 PubSubClient mqttClient;
@@ -34,8 +36,8 @@ void initMQTT(void){
   WiFi.macAddress(mac);
   snprintf(mqtt_client_id, 13,"%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
 
-  snprintf(mqtt_topic_data_pub, sizeof(mqtt_topic_pre_data_pub) + sizeof(FlashData.group), "%s%s", mqtt_topic_pre_data_pub, FlashData.group);
-  snprintf(mqtt_topic_control_sub, sizeof(mqtt_topic_pre_data_pub) + sizeof(mqtt_client_id), "%s%s", mqtt_topic_pre_control_sub, mqtt_client_id);
+  snprintf(mqtt_topic_data_pub_buf, sizeof(mqtt_topic_data_pub_buf), "%s%s", mqtt_topic_pre_data_pub, FlashData.group);
+  snprintf(mqtt_topic_control_sub_buf, sizeof(mqtt_topic_control_sub_buf), "%s%s", mqtt_topic_pre_control_sub, mqtt_client_id);
 
   mqttClient.setClient(tcpClient);
   mqttClient.setServer(mqtt_broker_addr, mqtt_broker_port);

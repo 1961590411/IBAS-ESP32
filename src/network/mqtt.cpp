@@ -56,11 +56,11 @@ void mqttCallback(char *topic, byte *payload, unsigned int length){
   Serial.print("收到订阅的json: ");
   Serial.println(input);
   if(!jsonBuffer["params"]["AlarmManual"].isNull()){
-    set_alarm_auto(jsonBuffer["params"]["AlarmManual"]);
+    set_alarm_manual(jsonBuffer["params"]["AlarmManual"]);
     needDataRefresh = true;
   }
   if(!jsonBuffer["params"]["AlarmAuto"].isNull()){
-    set_alarm_manual(jsonBuffer["params"]["AlarmAuto"]);
+    set_alarm_auto(jsonBuffer["params"]["AlarmAuto"]);
     needDataRefresh = true;
   }
   if(!jsonBuffer["params"]["Group"].isNull()) {

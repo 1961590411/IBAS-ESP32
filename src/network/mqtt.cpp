@@ -13,7 +13,7 @@ const  char    *mqtt_broker_addr           = "120.26.133.159";                  
 const  uint16_t mqtt_broker_port           = 1883;                                 //服务端口号
 
 const  char    *mqtt_username              = nullptr;                              //账号
-static char     mqtt_client_id[13];                                                //客户端ID
+static char     mqtt_client_id[13]         = {0};                                  //客户端ID
 const  char    *mqtt_password              = "IBAS";                               //密码
 
 const  char    *mqtt_topic_hello_pub       = "IBAS/system/device/hello";           //发布主题Hello
@@ -22,8 +22,6 @@ const  char    *mqtt_topic_data_pub        = mqtt_topic_data_pub_buf;           
 
 const  char    *mqtt_topic_pre_control_sub = "IBAS/system/client/control/device/"; //订阅主题Control前缀
 const  char    *mqtt_topic_control_sub     = mqtt_topic_control_sub_buf;           //订阅主题Control
-
-const char *mqtt_username = nullptr;
 
 WiFiClient tcpClient;
 PubSubClient mqttClient;
@@ -55,8 +53,11 @@ void mqttCallback(char *topic, byte *payload, unsigned int length){
     set_alarm_auto(jsonBuffer["params"]["AlarmSwitchAuto"]);
   if(!jsonBuffer["params"]["AlarmSwitchManual"].isNull())
     set_alarm_manual(jsonBuffer["params"]["AlarmSwitchManual"]);
-  if(!jsonBuffer["params"]["Group"].isNull())
-    strncpy(FlashData.group, jsonBuffer["params"]["Group"], 32);
+  if(!jsonBuffer["params"]["Group"].isNull()) {
+    strncpy(FlashData.group, jsonBuffer["params"]["Group"], 31);
+    FlashData.group[31] = '\0';
+    snprintf(mqtt_topic_data_pub_buf, sizeof(mqtt_topic_data_pub_buf), "%s%s", mqtt_topic_pre_data_pub, FlashData.group);
+}
 }
 
 unsigned long previousConnectMillis = 0; // 毫秒时间记录

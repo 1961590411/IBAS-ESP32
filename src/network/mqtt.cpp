@@ -3,26 +3,44 @@
 
 #include "network/mqtt.h"
 
+void mqttCallback(char*,byte*,unsigned int);
+
 static char mqtt_client_id_buf[13] = {0};
 static char mqtt_topic_pub_buf[128] = {0};
 
 /** MQTT相关配置信息 */
-const char    *mqtt_broker_addr = "120.26.133.159";                                       //服务器地址
-const uint16_t mqtt_broker_port = 1883;                                                   //服务端口号
-const char    *mqtt_username;                                              //账号
-const char    *mqtt_password    = "IBAS";                                                 //密码
-const char    *mqtt_client_id   = "MyESP32";                                              //客户端ID
+const char    *mqtt_broker_addr           = "120.26.133.159";                     //服务器地址
+const uint16_t mqtt_broker_port           = 1883;                                 //服务端口号
 
-const char    *mqtt_topic_hello_pub   = "IBAS/system/device/hello";    
-const char    *mqtt_topic_pre_data_pub = "/sys/k1xumLrUjyl/MyESP32/thing/event/property/post/"; // 发布主题前缀(示例)
-const char    *mqtt_topic_pub   = mqtt_topic_pub_buf;                                     //需要发布到的主题(运行时拼接)
+const char    *mqtt_username;                                                     //账号
+const char    *mqtt_password              = "IBAS";                               //密码
+const char    *mqtt_client_id;                                                    //客户端ID
 
-const char    *mqtt_topic_data_sub   = "/sys/k1xumLrUjyl/MyESP32/thing/service/property/set";  //需要订阅的主题
+const char    *mqtt_topic_hello_pub       = "IBAS/system/device/hello";    
+const char    *mqtt_topic_pre_data_pub    = "IBAS/system/device/group/";          // 发布主题前缀(示例)
+const char    *mqtt_topic_data_pub;
+
+const char    *mqtt_topic_pre_control_sub = "IBAS/system/client/control/device/"; //需要订阅的主题
+const char    *mqtt_topic_control_sub;
 
 
 WiFiClient tcpClient;
 PubSubClient mqttClient;
 //声明一个客户端对象，用于与服务器进行连接
+
+void initMQTT(void){
+  
+  mqtt_username = FlashData.mqttName;
+  uint8_t mac[6];
+  WiFi.macAddress(mac);
+  snprintf(mqtt_client_id_buf, sizeof(mqtt_client_id_buf),
+           "%02X%02X%02X%02X%02X%02X",
+           mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+
+  mqttClient.setClient(tcpClient);
+  mqttClient.setServer(mqtt_broker_addr, mqtt_broker_port);
+  mqttClient.setCallback(mqttCallback);
+}
 
 void mqttCallback(char *topic, byte *payload, unsigned int length){
   JsonDocument jsonBuffer;
@@ -37,20 +55,6 @@ void mqttCallback(char *topic, byte *payload, unsigned int length){
     set_alarm_manual(jsonBuffer["params"]["AlarmSwitchManual"]);
 }
 
-void initMQTT(void){
-  snprintf(mqtt_topic_pub_buf, sizeof(mqtt_topic_pub_buf), "%s%s", mqtt_topic_pre_data_pub, mqtt_client_id);
-  mqtt_username = FlashData.mqttName;
-  uint8_t mac[6];
-  WiFi.macAddress(mac);
-  snprintf(mqtt_client_id_buf, sizeof(mqtt_client_id_buf),
-           "%02X%02X%02X%02X%02X%02X",
-           mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-
-  mqttClient.setClient(tcpClient);
-  mqttClient.setServer(mqtt_broker_addr, mqtt_broker_port);
-  mqttClient.setCallback(mqttCallback);
-}
-
 unsigned long previousConnectMillis = 0; // 毫秒时间记录
 const long intervalConnectMillis = 20000; // 时间间隔
 unsigned long previousHelloPublishMillis = 0; // 毫秒时间记录
@@ -62,23 +66,22 @@ void loopMQTT(void){
   /** 查询连接状态 */
   if(!isConnect())
     return;
+
   unsigned long currentMillis = millis(); // 读取当前时间
 
   // 连接MQTT服务器
   if(!mqttClient.connected()) // 如果未连接
-  {
     if(currentMillis - previousConnectMillis > intervalConnectMillis){
       previousConnectMillis = currentMillis;
-      if(mqttClient.connect(mqtt_client_id, mqtt_username, mqtt_password)){
-        mqttClient.subscribe(mqtt_topic_data_sub); // 连接成功后可以订阅主题
+      if(!mqttClient.connect(mqtt_client_id, mqtt_username, mqtt_password)){
+        Serial.print("MQTT连接失败, 错误编号: ");
+        Serial.println(mqttClient.state()); // 连接成功后可以订阅主题
       }
       else{
-        unsigned char i = mqttClient.state();
-        Serial.print("MQTT连接失败, 错误编号: ");
-        Serial.println(i);
+        Serial.print("MQTT连接成功!");
+        controlSub();
       }
     }
-  }
 
   if(!mqttClient.connected())
     return;
@@ -123,5 +126,14 @@ void dataPub(void){
   serializeJson(jsonBuffer, output);
   Serial.print("即将推送的json: ");
   Serial.println(output);
-  mqttClient.publish(mqtt_topic_pub, output.c_str());
+  mqttClient.publish(mqtt_topic_data_pub, output.c_str());
+}
+
+void controlSub(void){
+  if(mqttClient.subscribe(mqtt_topic_control_sub)){
+    Serial.print("成功订阅主题: ");
+    Serial.println(mqtt_topic_control_sub);
+    return;
+  }
+  Serial.println("主题订阅失败, 请检查相关配置!");
 }

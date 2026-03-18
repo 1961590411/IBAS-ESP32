@@ -63,11 +63,11 @@ void mqttCallback(char *topic, byte *payload, unsigned int length){
 }
 
 unsigned long previousConnectMillis = 0; // 毫秒时间记录
-const long intervalConnectMillis = 20000; // 时间间隔
+const long intervalConnectMillis = 5000; // 时间间隔
 unsigned long previousHelloPublishMillis = 0; // 毫秒时间记录
 const long intervalHelloPublishMillis = 3600000; // 时间间隔
 unsigned long previousDataPublishMillis = 0; // 毫秒时间记录
-const long intervalDataPublishMillis = 20000; // 时间间隔
+const long intervalDataPublishMillis = 60000; // 时间间隔
 
 void loopMQTT(void){
   /** 查询连接状态 */

@@ -27,13 +27,14 @@ void loadFlash(void){
 }
 
 void resetFlash(void){
-  // 设置默认变量值
+  //设置默认变量值
   strncpy(FlashData.signature, CONFIG_SIGNATURE, 8);
   strncpy(FlashData.mqttName, "devide-id", 32);
   strncpy(FlashData.wifiSSID, "wifi-ssid", 32);
   strncpy(FlashData.wifiPass, "wifi-password", 32);
   FlashData.hasGroup = false;
   strncpy(FlashData.mqttName, "null", 32);
+  strncpy(FlashData.group, "null", 32); 
   strncpy(FlashData.logicalAddress, "local-address", 64);
   //记得保存
   saveFlash();

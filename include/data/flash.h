@@ -36,7 +36,7 @@ struct FlashDataStruct
      */
     char logicalAddress[64];
 
-    bool hasGroup;
+    bool hasGroup = false;
 
     char group[32];
 };

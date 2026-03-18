@@ -9,20 +9,19 @@ static char mqtt_client_id_buf[13] = {0};
 static char mqtt_topic_pub_buf[128] = {0};
 
 /** MQTT相关配置信息 */
-const char    *mqtt_broker_addr           = "120.26.133.159";                     //服务器地址
-const uint16_t mqtt_broker_port           = 1883;                                 //服务端口号
+const  char    *mqtt_broker_addr           = "120.26.133.159";                     //服务器地址
+const  uint16_t mqtt_broker_port           = 1883;                                 //服务端口号
 
-const char    *mqtt_username;                                                     //账号
-const char    *mqtt_password              = "IBAS";                               //密码
-const char    *mqtt_client_id;                                                    //客户端ID
+static char    *mqtt_username;                                                     //账号
+static char    *mqtt_client_id;                                                    //客户端ID
+const  char    *mqtt_password              = "IBAS";                               //密码
 
-const char    *mqtt_topic_hello_pub       = "IBAS/system/device/hello";    
-const char    *mqtt_topic_pre_data_pub    = "IBAS/system/device/group/";          // 发布主题前缀(示例)
-const char    *mqtt_topic_data_pub;
+const  char    *mqtt_topic_hello_pub       = "IBAS/system/device/hello";           //
+const  char    *mqtt_topic_pre_data_pub    = "IBAS/system/device/group/";          //发布主题前缀
+static char    *mqtt_topic_data_pub;                                               //发布主题
 
-const char    *mqtt_topic_pre_control_sub = "IBAS/system/client/control/device/"; //需要订阅的主题
-const char    *mqtt_topic_control_sub;
-
+const  char    *mqtt_topic_pre_control_sub = "IBAS/system/client/control/device/"; //订阅主题前缀
+static char    *mqtt_topic_control_sub;                                            //订阅主题
 
 WiFiClient tcpClient;
 PubSubClient mqttClient;
@@ -33,9 +32,10 @@ void initMQTT(void){
   mqtt_username = FlashData.mqttName;
   uint8_t mac[6];
   WiFi.macAddress(mac);
-  snprintf(mqtt_client_id_buf, sizeof(mqtt_client_id_buf),
-           "%02X%02X%02X%02X%02X%02X",
-           mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+  snprintf(mqtt_client_id, 13,"%02X%02X%02X%02X%02X%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+
+  snprintf(mqtt_topic_data_pub, sizeof(mqtt_topic_pre_data_pub) + sizeof(FlashData.group), "%s%s", mqtt_topic_pre_data_pub, FlashData.group);
+  snprintf(mqtt_topic_control_sub, sizeof(mqtt_topic_pre_data_pub) + sizeof(mqtt_client_id), "%s%s", mqtt_topic_pre_control_sub, mqtt_client_id);
 
   mqttClient.setClient(tcpClient);
   mqttClient.setServer(mqtt_broker_addr, mqtt_broker_port);
@@ -53,6 +53,8 @@ void mqttCallback(char *topic, byte *payload, unsigned int length){
     set_alarm_auto(jsonBuffer["params"]["AlarmSwitchAuto"]);
   if(!jsonBuffer["params"]["AlarmSwitchManual"].isNull())
     set_alarm_manual(jsonBuffer["params"]["AlarmSwitchManual"]);
+  if(!jsonBuffer["params"]["Group"].isNull())
+    strncpy(FlashData.group, jsonBuffer["params"]["Group"], 32);
 }
 
 unsigned long previousConnectMillis = 0; // 毫秒时间记录
@@ -112,7 +114,7 @@ void helloPub(void){
   serializeJson(jsonBuffer, output);
   Serial.print("即将推送的json: ");
   Serial.println(output);
-  mqttClient.publish(mqtt_topic_hello_pub, output.c_str());
+  mqttClient.publish(mqtt_topic_hello_pub, output.c_str(), true);
 }
 
 void dataPub(void){

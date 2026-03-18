@@ -35,6 +35,10 @@ struct FlashDataStruct
      * 例如：设备在建筑中的具体位置描述（如 "BuildingA-Floor3-Room302"）或云端唯一映射地址。 
      */
     char logicalAddress[64];
+
+    bool hasGroup;
+
+    char group[32];
 };
 
 /** @brief 全局配置实例。程序运行时通过此变量访问或修改当前系统的运行参数。 */

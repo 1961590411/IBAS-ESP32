@@ -32,6 +32,8 @@ void resetFlash(void){
   strncpy(FlashData.mqttName, "devide-id", 32);
   strncpy(FlashData.wifiSSID, "wifi-ssid", 32);
   strncpy(FlashData.wifiPass, "wifi-password", 32);
+  FlashData.hasGroup = false;
+  strncpy(FlashData.mqttName, "null", 32);
   strncpy(FlashData.logicalAddress, "local-address", 64);
   //记得保存
   saveFlash();

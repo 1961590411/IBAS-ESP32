@@ -60,7 +60,7 @@ void mqttCallback(char *topic, byte *payload, unsigned int length){
     needDataRefresh = true;
   }
   if(!jsonBuffer["params"]["AlarmAuto"].isNull()){
-    set_alarm_auto(jsonBuffer["params"]["AlarmAuto"]);
+    set_alarm_manual(jsonBuffer["params"]["AlarmAuto"]);
     needDataRefresh = true;
   }
   if(!jsonBuffer["params"]["Group"].isNull()) {

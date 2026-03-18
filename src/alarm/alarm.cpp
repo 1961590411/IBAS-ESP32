@@ -19,7 +19,7 @@ void setup_alarm()
 void loop_alarm()
 {
   if((alarmAuto && !alarmAutoLast) || (alarmManual && !alarmManualLast)){
-    refresh();
+    dataRefresh();
   }
   //警报激活，蜂鸣器启动
   if(alarmAuto || alarmManual)

@@ -1,5 +1,5 @@
 //Dev      :  Doogle007
-//Last Edit:  2026/3/13
+//Last Edit:  2026/3/19
 
 #include "data\flash.h"
 
@@ -29,7 +29,7 @@ void loadFlash(void){
 void resetFlash(void){
   //设置默认变量值
   strncpy(FlashData.signature, CONFIG_SIGNATURE, 8);
-  strncpy(FlashData.mqttName, "devide-id", 32);
+  strncpy(FlashData.mqttName, "devide-name", 32);
   strncpy(FlashData.wifiSSID, "wifi-ssid", 32);
   strncpy(FlashData.wifiPass, "wifi-password", 32);
   FlashData.hasGroup = false;

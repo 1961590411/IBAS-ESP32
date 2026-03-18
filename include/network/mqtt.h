@@ -36,6 +36,14 @@ void loopMQTT(void);
  * 1. 该函数通过重置内部的时间戳或计数器，解除发送频率限制。
  * 2. 强制系统在 loopMQTT 的下一次迭代中封装并发布最新的传感器 JSON 数据。
  */
-void refresh(void);
+void dataRefresh(void);
+
+/**
+ * @brief  触发挥手立即同步（刷新消息冷却计时器）
+ * @details 
+ * 1. 该函数通过重置内部的时间戳或计数器，解除发送频率限制。
+ * 2. 强制系统在 loopMQTT 的下一次迭代中封装并发布最新的传感器 JSON 数据。
+ */
+void helloRefresh(void);
 
 #endif

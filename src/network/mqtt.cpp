@@ -1,5 +1,5 @@
 //Dev      :  Doogle007
-//Last Edit:  2026/3/12
+//Last Edit:  2026/3/19
 
 #include "network/mqtt.h"
 
@@ -28,7 +28,6 @@ PubSubClient mqttClient;
 //声明一个客户端对象，用于与服务器进行连接
 
 void initMQTT(void){
-  
   mqtt_username = FlashData.mqttName;
   uint8_t mac[6];
   WiFi.macAddress(mac);
@@ -43,23 +42,50 @@ void initMQTT(void){
 }
 
 void mqttCallback(char *topic, byte *payload, unsigned int length){
+  boolean needSaveFlash = false;
+  boolean needDataRefresh = false;
   JsonDocument jsonBuffer;
-  deserializeJson(jsonBuffer, payload, length);
+  DeserializationError err = deserializeJson(jsonBuffer, payload, length);
+  if(err){
+    Serial.print("JSON解析失败: ");
+    Serial.println(err.c_str());
+    return;
+  }
   String input;
   serializeJson(jsonBuffer, input);
   Serial.print("收到订阅的json: ");
   Serial.println(input);
-  if(!jsonBuffer["params"]["AlarmSwitchAuto"].isNull())
-    set_alarm_auto(jsonBuffer["params"]["AlarmSwitchAuto"]);
-  if(!jsonBuffer["params"]["AlarmSwitchManual"].isNull())
-    set_alarm_manual(jsonBuffer["params"]["AlarmSwitchManual"]);
+  if(!jsonBuffer["params"]["AlarmManual"].isNull()){
+    set_alarm_auto(jsonBuffer["params"]["AlarmManual"]);
+    needDataRefresh = true;
+  }
+  if(!jsonBuffer["params"]["AlarmAuto"].isNull()){
+    set_alarm_auto(jsonBuffer["params"]["AlarmAuto"]);
+    needDataRefresh = true;
+  }
   if(!jsonBuffer["params"]["Group"].isNull()) {
     strncpy(FlashData.group, jsonBuffer["params"]["Group"], 31);
     FlashData.group[31] = '\0';
     FlashData.hasGroup = true;
-    saveFlash();
+    needSaveFlash = true;
     snprintf(mqtt_topic_data_pub_buf, sizeof(mqtt_topic_data_pub_buf), "%s%s", mqtt_topic_pre_data_pub, FlashData.group);
   }
+  if(!jsonBuffer["params"]["Name"].isNull()) {
+    strncpy(FlashData.mqttName, jsonBuffer["params"]["Name"], 31);
+    FlashData.mqttName[31] = '\0';
+    needSaveFlash = true;
+  }
+  if(!jsonBuffer["params"]["LogicalAddress"].isNull()) {
+    strncpy(FlashData.logicalAddress, jsonBuffer["params"]["LogicalAddress"], 63);
+    FlashData.logicalAddress[63] = '\0';
+    needSaveFlash = true;
+  }
+  if(needSaveFlash){
+    saveFlash();
+    helloRefresh();
+  }
+  if(needDataRefresh)
+    dataRefresh();
 }
 
 unsigned long previousConnectMillis = 0; // 毫秒时间记录
@@ -104,14 +130,18 @@ void loopMQTT(void){
   mqttClient.loop();
 }
 
-void refresh(void){
+void dataRefresh(void){
   previousDataPublishMillis = 0;
+}
+
+void helloRefresh(void){
+  previousHelloPublishMillis = 0;
 }
 
 void helloPub(void){
   JsonDocument jsonBuffer;
   JsonObject root = jsonBuffer["params"].to<JsonObject>();
-  root["DeviceID"] = FlashData.mqttName;
+  root["Name"] = FlashData.mqttName;
   if(FlashData.hasGroup)
     root["Group"] = FlashData.group;
   root["LogicalAddress"] = FlashData.logicalAddress;
@@ -125,10 +155,9 @@ void helloPub(void){
 void dataPub(void){
   JsonDocument jsonBuffer;
   JsonObject root = jsonBuffer["params"].to<JsonObject>();
-  root["DeviceID"] = FlashData.mqttName;
-  root["LogicalAddress"] = FlashData.logicalAddress;
-  root["AlarmSwitchManual"] = get_alarm_manual() ? "true" : "false";
-  root["AlarmSwitchAuto"] = get_alarm_auto() ? "true" : "false";
+  root["Name"] = FlashData.mqttName;
+  root["AlarmManual"] = get_alarm_manual() ? "true" : "false";
+  root["AlarmAuto"] = get_alarm_auto() ? "true" : "false";
   String output;
   serializeJson(jsonBuffer, output);
   Serial.print("即将推送的json: ");

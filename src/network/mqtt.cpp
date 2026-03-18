@@ -4,13 +4,13 @@
 #include "network/mqtt.h"
 
 /** MQTT相关配置信息 */
-const char    *mqtt_broker_addr = "120.26.133.159";                                                                  //服务器地址
-const uint16_t mqtt_broker_port = 1883;                                                                              //服务端口号
-const char    *mqtt_username    = "MyESP32";                                                             //账号
-const char    *mqtt_password    = "00000000";                                                                        //密码
-const char    *mqtt_client_id   = "TestClient";                                                                            //客户端ID
-const char    *mqtt_topic_pub   = "TestClient";                              //需要发布到的主题
-const char    *mqtt_topic_sub   = "/sys/k1xumLrUjyl/MyESP32/thing/service/property/set";                             //需要订阅的主题
+const char    *mqtt_broker_addr = "120.26.133.159";                                       //服务器地址
+const uint16_t mqtt_broker_port = 1883;                                                   //服务端口号
+const char    *mqtt_username    = "MyESP32";                                              //账号
+const char    *mqtt_password    = "IBAS";                                                 //密码
+const char    *mqtt_client_id   = "MyESP32";                                              //客户端ID
+const char    *mqtt_topic_pub   = "TestClient";                                           //需要发布到的主题
+const char    *mqtt_topic_sub   = "/sys/k1xumLrUjyl/MyESP32/thing/service/property/set";  //需要订阅的主题
 
 WiFiClient tcpClient;
 PubSubClient mqttClient;

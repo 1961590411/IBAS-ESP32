@@ -8,6 +8,7 @@
 #include "alarm/alarm.h"
 #include "data/flash.h"
 #include "network/wifi.h"
+#include <WiFi.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 

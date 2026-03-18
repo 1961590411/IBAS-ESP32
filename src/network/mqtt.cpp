@@ -44,7 +44,7 @@ void initMQTT(void){
 
 void mqttCallback(char *topic, byte *payload, unsigned int length){
   JsonDocument jsonBuffer;
-  deserializeJson(jsonBuffer, payload);
+  deserializeJson(jsonBuffer, payload, length);
   String input;
   serializeJson(jsonBuffer, input);
   Serial.print("收到订阅的json: ");
@@ -56,8 +56,10 @@ void mqttCallback(char *topic, byte *payload, unsigned int length){
   if(!jsonBuffer["params"]["Group"].isNull()) {
     strncpy(FlashData.group, jsonBuffer["params"]["Group"], 31);
     FlashData.group[31] = '\0';
+    FlashData.hasGroup = true;
+    saveFlash();
     snprintf(mqtt_topic_data_pub_buf, sizeof(mqtt_topic_data_pub_buf), "%s%s", mqtt_topic_pre_data_pub, FlashData.group);
-}
+  }
 }
 
 unsigned long previousConnectMillis = 0; // 毫秒时间记录

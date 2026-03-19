@@ -129,28 +129,34 @@ void loopMQTT(void){
   unsigned long currentMillis = millis(); // 读取当前时间
 
   // 连接MQTT服务器
-  if(!mqttClient.connected()) // 如果未连接
+  if(!mqttClient.connected()){ // 如果未连接
     if(currentMillis - previousConnectMillis > intervalConnectMillis){
       previousConnectMillis = currentMillis;
-      if(!mqttClient.connect(mqtt_client_id, mqtt_username, mqtt_password)){
+      if(!mqttClient.connect(mqtt_client_id, mqtt_username, mqtt_password)){ // 连接成功后可以订阅主题
         Serial.print("MQTT连接失败, 错误编号: ");
-        Serial.println(mqttClient.state()); // 连接成功后可以订阅主题
+        Serial.println(mqttClient.state());
       }
       else{
         Serial.println("MQTT连接成功!");
+        helloPub();
+        dataPub();
         controlSub();
       }
     }
-
-  if(!mqttClient.connected())
     return;
+  }
+
   // 定期发送消息
   if(currentMillis - previousHelloPublishMillis >= intervalHelloPublishMillis){
     previousHelloPublishMillis = currentMillis;
+    Serial.print("即将推送主题: ");
+    Serial.println(mqtt_topic_hello_pub);
     helloPub();
   }
   if(currentMillis - previousDataPublishMillis >= intervalDataPublishMillis){ // 如果和前次时间大于等于时间间隔{
     previousDataPublishMillis = currentMillis;
+    Serial.print("即将推送主题: ");
+    Serial.println(mqtt_topic_data_pub);
     dataPub();
   }
   mqttClient.loop();
